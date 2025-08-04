@@ -1,36 +1,74 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-.yarn/install-state.gz
+# -----------------------------------------------------------------------------
+# 1. Dependencies
+node_modules/
+.pnpm-store/
 
-# testing
-/coverage
+# -----------------------------------------------------------------------------
+# 2. Next.js/Build
+.next/
+out/
+build/
+dist/
+.swc/
+.next/analyze/
 
-# next.js
-/.next/
-/out/
+# -----------------------------------------------------------------------------
+# 3. Environment Variables
+.env*
+!.env.example
 
-# production
-/build
+# -----------------------------------------------------------------------------
+# 4. IDEs and Editors
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# misc
+# -----------------------------------------------------------------------------
+# 5. Operating System Files
 .DS_Store
-*.pem
+Thumbs.db
 
-# debug
+# -----------------------------------------------------------------------------
+# 6. Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+*.log
 
-# local env files
-.env*.local
+# -----------------------------------------------------------------------------
+# 7. Testing
+coverage/
+.jest-cache/
 
-# vercel
-.vercel
+# -----------------------------------------------------------------------------
+# 8. Miscellaneous
+*.pem
+*.tmp
+*.bak
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# -----------------------------------------------------------------------------
+# 9. Lock files (exclude if you're not committing them)
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# -----------------------------------------------------------------------------
+# 10. Other tools
+.eslintcache
+.prettierignore
+.prettierrc
+.prettierrc.*
+.envrc
+.cache/
+.turbo/
+.vercel/
