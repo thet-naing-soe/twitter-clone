@@ -65,9 +65,6 @@ package-lock.json
 # -----------------------------------------------------------------------------
 # 10. Other tools
 .eslintcache
-.prettierignore
-.prettierrc
-.prettierrc.*
 .envrc
 .cache/
 .turbo/
