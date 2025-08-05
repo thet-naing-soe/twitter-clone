@@ -36,4 +36,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: ✅ Run repo checks (lint, type-check, tests)
-        run: pnpm run ci
+        run: |
+          pnpm prettier --version
+          pnpm prettier --check .
+          pnpm run ci
