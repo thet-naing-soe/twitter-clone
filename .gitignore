@@ -72,3 +72,6 @@ package-lock.json
 .cache/
 .turbo/
 .vercel/
+
+# 11. TypeScript
+*.tsbuildinfo

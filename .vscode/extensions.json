@@ -7,7 +7,7 @@
     "bradlc.vscode-tailwindcss",        // Tailwind IntelliSense & class sorting
     "GraphQL.vscode-graphql",           // tRPC & gql syntax highlighting (optional)
     "eamodio.gitlens",                  // Rich Git blame & history (helps reviews)
-    "orta.vscode-jest",                 // Vitest/Jest test explorer
+    "vitest.explorer",                 // Vitest/Jest test explorer
     "styled-components.vscode-styled-components", // Shadcn/ui tokens (optional)
     "github.vscode-pull-request-github",// Inline PR reviews
     "ms-azuretools.vscode-docker"       // For local Postgres in Docker
