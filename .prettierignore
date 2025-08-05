@@ -50,12 +50,13 @@ LICENSE
 .cache
 .turbo
 
-# # CI and project config files to ignore in formatting
-# .github/
-# .eslintrc.json
-# commitlint.config.cjs
-# lint-staged.config.cjs
-# vitest.config.ts
-# vitest.setup.ts
-# tailwind.config.ts
+# Ignore configuration & tooling files
+.github/**
+.vscode/**
+eslint*.{js,cjs,json}
+commitlint.config.cjs
+lint-staged.config.cjs
+vitest.config.ts
+vitest.setup.ts
+tailwind.config.ts
 
