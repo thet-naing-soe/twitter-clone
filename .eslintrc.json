@@ -7,7 +7,7 @@
     "sourceType": "module",
     "project": ["./tsconfig.json"]
   },
-  "plugins": ["@typescript-eslint", "react-hooks", "simple-import-sort", "tailwindcss"],
+  "plugins": ["@typescript-eslint", "simple-import-sort", "tailwindcss"],
   "extends": [
     "next/core-web-vitals",
     "plugin:@typescript-eslint/recommended",
@@ -18,8 +18,24 @@
   ],
   "rules": {
     "no-console": ["error", { "allow": ["warn", "error"] }],
-    "simple-import-sort/imports": "error",
+    "simple-import-sort/imports": [
+      "error",
+      {
+        "groups": [
+          ["^\\u0000"], // side-effect imports
+          ["^react$", "^next", "^@?\\w"], // packages
+          ["^@/components/(.*)$", "^@/(.*)$"], // your aliases
+          ["^\\.\\.(?!/?$)", "^\\.\\./?$"], // parent imports
+          ["^\\./(?=.*/)(?!/?$)", "^\\.(?!/?$)", "^\\./?$"], // same-folder
+          ["^.+\\.s?css$"] // styles last
+        ]
+      }
+    ],
     "simple-import-sort/exports": "error",
+
+    "import/order": "off",
+    "sort-imports": "off",
+
     "@typescript-eslint/consistent-type-imports": [
       "error",
       { "prefer": "type-imports", "fixStyle": "separate-type-imports" }
@@ -29,8 +45,6 @@
       { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_", "ignoreRestSiblings": true }
     ],
     "@typescript-eslint/no-explicit-any": ["warn", { "ignoreRestArgs": true }],
-    "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn",
     "tailwindcss/classnames-order": "warn",
     "tailwindcss/no-custom-classname": "off",
     "prefer-const": "error",
