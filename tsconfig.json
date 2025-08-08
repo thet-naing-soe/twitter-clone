@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
+    "allowJs": false,
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
@@ -12,6 +12,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "forceConsistentCasingInFileNames": true,
     "plugins": [
       {
         "name": "next"
@@ -27,8 +28,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "vitest.setup.ts",
-    "__test__"
+    "vitest.setup.tsx",
+    "vitest.config.ts"
   ],
   "exclude": ["node_modules"]
 }

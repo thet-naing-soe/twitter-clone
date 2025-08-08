@@ -1,9 +1,9 @@
 import '@testing-library/jest-dom';
-import type { UrlObject } from 'url';
-import { vi } from 'vitest';
 
 import React from 'react';
 import type { AnchorHTMLAttributes, ImgHTMLAttributes, PropsWithChildren } from 'react';
+import type { UrlObject } from 'url';
+import { vi } from 'vitest';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
