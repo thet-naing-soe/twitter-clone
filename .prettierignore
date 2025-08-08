@@ -54,9 +54,9 @@ LICENSE
 .github/**
 .vscode/**
 eslint*.{js,cjs,json}
-commitlint.config.cjs
-lint-staged.config.cjs
+commitlint.config.{js,cjs,mjs}
+lint-staged.config.{js,cjs,mjs}
 vitest.config.ts
-vitest.setup.ts
+vitest.setup.{ts,tsx}
 tailwind.config.ts
 
