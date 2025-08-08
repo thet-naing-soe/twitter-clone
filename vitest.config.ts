@@ -1,13 +1,32 @@
 /// <reference types="vitest" />
 import react from '@vitejs/plugin-react';
+import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    tsconfigPaths(),
+  ],
   test: {
-    environment: 'jsdom', // browser-like APIs
-    globals: true, // import { describe, it, expect } not needed
-    setupFiles: ['./vitest.setup.ts'],
-    include: ['**/*.test.{ts,tsx}'],
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./vitest.setup.tsx'], 
+    include: ['{app,components,lib}/**/*.test.{ts,tsx}'],
+
+    environmentOptions: { jsdom: { url: 'http://localhost/' } },
+
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'lcov'],
+      reportsDirectory: './coverage',
+      all: true,
+      include: ['app/**/*.{ts,tsx}', 'components/**/*.{ts,tsx}', 'lib/**/*.{ts,tsx}'],
+      exclude: ['**/*.d.ts', 'node_modules/**', '.next/**', 'e2e/**'],
+    },
+
+    exclude: ['node_modules', '.next', 'dist', 'e2e'],
+
+    environmentMatchGlobs: [['**/*.node.test.{ts,tsx}', 'node']],
   },
 });
