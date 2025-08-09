@@ -10,7 +10,8 @@
     "vitest.explorer",                 // Vitest/Jest test explorer
     "styled-components.vscode-styled-components", // Shadcn/ui tokens (optional)
     "github.vscode-pull-request-github",// Inline PR reviews
-    "ms-azuretools.vscode-docker"       // For local Postgres in Docker
+    "ms-azuretools.vscode-docker",      // For local Postgres in Docker
+    "ms-playwright.playwright"  // Playwright test
   ],
 
   // Extensions that will be suggested to uninstall if present

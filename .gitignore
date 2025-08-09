@@ -70,5 +70,17 @@ package-lock.json
 .turbo/
 .vercel/
 
+# -----------------------------------------------------------------------------
 # 11. TypeScript
 *.tsbuildinfo
+
+# -----------------------------------------------------------------------------
+# 13. Prisma
+/app/generated/prisma
+
+# -----------------------------------------------------------------------------
+# 14. Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

@@ -1,12 +1,21 @@
 /// <reference types="vitest" />
 import react from '@vitejs/plugin-react'
+import path from 'path'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
-  plugins: [react(), tsconfigPaths()],
+  plugins: [
+    react({ jsxImportSource: 'react' }),
+    tsconfigPaths()
+  ],
+
+  esbuild: {
+    jsx: 'automatic',
+    jsxImportSource: 'react'
+  },
+
   test: {
-    // Multiple projects with per-project test config
     projects: [
       {
         test: {
@@ -14,9 +23,23 @@ export default defineConfig({
           environment: 'jsdom',
           globals: true,
           setupFiles: ['./vitest.setup.tsx'],
-          include: ['{app,components,lib}/**/*.{test,spec}.{ts,tsx}'],
-          environmentOptions: { jsdom: { url: 'http://localhost/' } },
-          exclude: ['node_modules', '.next', 'dist', 'e2e'],
+          include: [
+            '{app,components,lib}/**/*.{test,spec}.{ts,tsx}',
+            '**/*.{test,spec}.{js,ts,jsx,tsx}'
+          ],
+          exclude: [
+            'node_modules',
+            'dist',
+            '.next',
+            'coverage',
+            'playwright-report',
+            '**/e2e/**',
+            '**/*.spec.ts',
+            '**/*.node.test.{ts,tsx}'
+          ],
+          environmentOptions: {
+            jsdom: { url: 'http://localhost/' }
+          },
         },
       },
       {
@@ -25,19 +48,45 @@ export default defineConfig({
           environment: 'node',
           globals: true,
           include: ['**/*.node.test.{ts,tsx}'],
-          exclude: ['node_modules', '.next', 'dist', 'e2e'],
+          exclude: [
+            'node_modules',
+            'dist',
+            '.next',
+            'coverage',
+            'tests',
+            '**/e2e/**'
+          ],
         },
       },
     ],
 
-    // Coverage applies across all projects
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'lcov'],
+      reporter: ['text', 'json', 'html', 'lcov'],
       reportsDirectory: './coverage',
       all: true,
-      include: ['app/**/*.{ts,tsx}', 'components/**/*.{ts,tsx}', 'lib/**/*.{ts,tsx}'],
-      exclude: ['**/*.d.ts', 'node_modules/**', '.next/**', 'e2e/**'],
+      include: [
+        'app/**/*.{ts,tsx}',
+        'components/**/*.{ts,tsx}',
+        'lib/**/*.{ts,tsx}'
+      ],
+      exclude: [
+        'node_modules/**',
+        'tests/**',
+        'dist/**',
+        '.next/**',
+        '**/*.d.ts',
+        '**/*.spec.ts',
+        '**/*.config.ts',
+        'coverage/**',
+        'playwright-report/**'
+      ],
     },
   },
+
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './')
+    }
+  }
 })

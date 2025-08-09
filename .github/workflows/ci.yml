@@ -1,42 +1,163 @@
 name: CI
 
 on:
-  pull_request: # PRs to any branch
-  push: # Direct pushes to main (e.g., after merge)
-    branches:
-      - main
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
-# Prevents two CI runs on the same branch from clobbering each other
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
+  code_quality:
+    name: 🔍 Code Quality
     runs-on: ubuntu-latest
-    timeout-minutes: 10 # fail fast if something hangs
+    timeout-minutes: 10
 
     steps:
-      - name: 📥 Checkout repo
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
       - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: 10
-          run_install: false # we’ll run it ourselves for granular control
 
-      - name: 🧰 Setup Node
+      - name: 🧰 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22 # ≥22 is required by Next 14
-          cache: 'pnpm' # enables npm-style cache
+          node-version: '22'
+          cache: 'pnpm'
 
       - name: 📦 Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: ✅ Run repo checks (lint, type-check, tests)
+      - name: 🧹 Run lint
+        run: pnpm run lint
+
+      - name: 💅 Check formatting
+        run: pnpm run format:check
+
+      - name: 🔍 Type check
+        run: pnpm run type-check
+
+  unit_tests:
+    name: 🧪 Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: code_quality
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: 🧰 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🧪 Run unit tests
+        run: pnpm run test:unit
+
+  database_tests:
+    name: 🗄️ Database Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: code_quality
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/test_db?schema=public"
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: 🧰 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: ✨ Generate Prisma client
+        run: pnpm run db:generate
+
+      - name: 🚀 Run migrations
+        run: pnpm run db:migrate:dev
+
+      - name: 🌱 Seed database
+        run: pnpm run db:seed
+
+      - name: 🔍 Test database connection
         run: |
-          pnpm prettier --version
-          pnpm prettier --check .
-          pnpm run ci
+          pnpm exec tsx -e "
+          import { PrismaClient } from '@prisma/client';
+          const prisma = new PrismaClient();
+          prisma.\$connect().then(() => {
+            console.log('✅ Database connected successfully');
+            process.exit(0);
+          }).catch(() => {
+            console.error('❌ Database connection failed');
+            process.exit(1);
+          });
+          "
+
+  build:
+    name: 🏗️ Build Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [unit_tests, database_tests]
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: 🧰 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🏗️ Build application
+        run: pnpm run build
