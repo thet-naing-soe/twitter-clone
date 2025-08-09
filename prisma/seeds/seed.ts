@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import type { Tweet, User } from '@prisma/client';
 
 import { prisma } from '@/lib/prisma';
 
@@ -17,7 +18,7 @@ async function main() {
   console.log('👥 Creating 50 users...');
 
   // Create 50 users with unique usernames
-  const users = await prisma.$transaction(
+  const users: User[] = await prisma.$transaction(
     Array.from({ length: 50 }).map((_, index) => {
       // Generate unique username
       const baseUsername = faker.internet.userName().toLowerCase();
@@ -41,7 +42,7 @@ async function main() {
   console.log('🐦 Creating 300 tweets...');
 
   // Create 300 tweets
-  const tweets = await prisma.$transaction(
+  const tweets: Tweet[] = await prisma.$transaction(
     Array.from({ length: 300 }).map(() => {
       const author = faker.helpers.arrayElement(users);
       const content = faker.lorem.sentence({ min: 3, max: 20 });
@@ -82,8 +83,8 @@ async function main() {
       skipDuplicates: true, // Skip if duplicate relationship exists
     });
     console.log(`✅ Created ${follows.count} follow relationships`);
-  } catch (error) {
-    console.log('⚠️  Some follow relationships were duplicates, continuing...', error);
+  } catch (error: unknown) {
+    console.error('⚠️  Some follow relationships were duplicates, continuing...', error);
   }
 
   // Create some likes
@@ -106,8 +107,8 @@ async function main() {
       skipDuplicates: true,
     });
     console.log(`✅ Created ${likes.count} likes`);
-  } catch (error) {
-    console.log('⚠️  Some likes were duplicates, continuing...', error);
+  } catch (error: unknown) {
+    console.error('⚠️  Some likes were duplicates, continuing...', error);
   }
 
   // Final stats
