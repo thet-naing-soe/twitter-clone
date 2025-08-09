@@ -59,4 +59,9 @@ lint-staged.config.{js,cjs,mjs}
 vitest.config.ts
 vitest.setup.{ts,tsx}
 tailwind.config.ts
+playwright.config.ts
+
+# Playwright
+playwright-report
+test-results
 
