@@ -70,6 +70,9 @@ jobs:
       - name: 📦 Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: ✨ Generate Prisma client
+        run: pnpm run db:generate
+
       - name: 🧪 Run unit tests
         run: pnpm run test:unit
 
@@ -161,6 +164,9 @@ jobs:
 
       - name: 📦 Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: ✨ Generate Prisma client
+        run: pnpm run db:generate
 
       - name: 🏗️ Build application
         run: pnpm run build

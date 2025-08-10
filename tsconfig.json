@@ -21,14 +21,13 @@
     "paths": {
       "@/*": ["./*"]
     },
-    "types": ["vitest/globals", "@testing-library/jest-dom", "vitest", "node"]
+    "types": ["vitest/globals", "@testing-library/jest-dom", "vitest"]
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "node_modules/@prisma/client",
     "vitest.setup.tsx",
     "vitest.config.ts"
   ],
