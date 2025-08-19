@@ -95,16 +95,14 @@ export async function seedStagingData(): Promise<void> {
 
 // Execute if this file is run directly
 /* v8 ignore start */
-if (require.main === module) {
-  main()
-    .then(async () => {
-      await prisma.$disconnect();
-      log.info('Database connection closed');
-    })
-    .catch(async (error: unknown) => {
-      log.error(`Seeding failed: ${formatError(error)}`);
-      await prisma.$disconnect();
-      process.exit(1);
-    });
-}
+main()
+  .then(async () => {
+    await prisma.$disconnect();
+    log.info('Database connection closed');
+  })
+  .catch(async (error: unknown) => {
+    log.error(`Seeding failed: ${formatError(error)}`);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
 /* v8 ignore stop */
