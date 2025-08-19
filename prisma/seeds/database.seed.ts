@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'url';
+
 import { prisma } from '@/lib/prisma';
 
 import { log } from '../utils/logger';
@@ -92,17 +94,18 @@ export async function seedStagingData(): Promise<void> {
 
   await displayStats();
 }
-
 // Execute if this file is run directly
 /* v8 ignore start */
-main()
-  .then(async () => {
-    await prisma.$disconnect();
-    log.info('Database connection closed');
-  })
-  .catch(async (error: unknown) => {
-    log.error(`Seeding failed: ${formatError(error)}`);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  main()
+    .then(async () => {
+      await prisma.$disconnect();
+      log.info('Database connection closed');
+    })
+    .catch(async (error: unknown) => {
+      log.error(`Seeding failed: ${formatError(error)}`);
+      await prisma.$disconnect();
+      process.exit(1);
+    });
+}
 /* v8 ignore stop */

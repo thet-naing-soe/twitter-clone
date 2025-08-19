@@ -22,7 +22,7 @@
     "paths": {
       "@/*": ["./*"]
     },
-    "types": ["node", "@testing-library/jest-dom", "vitest"]
+    "types": ["node", "@testing-library/jest-dom"]
   },
   "include": [
     "next-env.d.ts",
