@@ -1,86 +1,261 @@
-name: CI
+name: 🚀 CI/CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'LICENSE'
   pull_request:
-    branches: [main]
+    branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore' 
+      - 'LICENSE'
+  workflow_dispatch:
 
+# Optimized concurrency
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+# Environment variables
+env:
+  NODE_VERSION: '22'
+  PNPM_VERSION: '10'
+  DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/test_db"
 
 jobs:
-  code_quality:
+  # Changes detection for optimized runs
+  changes:
+    name: 📋 Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.changes.outputs.code }}
+      tests: ${{ steps.changes.outputs.tests }}
+      deps: ${{ steps.changes.outputs.deps }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            code:
+              - 'app/**'
+              - 'lib/**'
+              - 'components/**'
+              - 'prisma/**'
+            tests:
+              - '__tests__/**'
+              - '**/*.{test,spec}.{ts,tsx}'
+              - 'vitest.config.ts'
+              - 'playwright.config.ts'
+            deps:
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+
+  # Setup job for better caching
+  setup:
+    name: 🔧 Setup
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.code == 'true' || needs.changes.outputs.tests == 'true' || needs.changes.outputs.deps == 'true'
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🧰 Setup Node.js  
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: 📦 Install dependencies
+        run: pnpm ci:prepare
+
+      - name: 💾 Cache node_modules
+        uses: actions/cache@v4
+        id: cache-deps
+        with:
+          path: |
+            node_modules
+            .next/cache
+          key: deps-${{ hashFiles('pnpm-lock.yaml') }}
+
+  # Code Quality - Fast feedback
+  quality:
     name: 🔍 Code Quality
     runs-on: ubuntu-latest
+    needs: [changes, setup]
+    if: needs.changes.outputs.code == 'true' || needs.changes.outputs.deps == 'true'
     timeout-minutes: 10
-
     steps:
-      - name: 📥 Checkout code
+      - name: 📥 Checkout
         uses: actions/checkout@v4
 
       - name: 📦 Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: ${{ env.PNPM_VERSION }}
 
       - name: 🧰 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
-      - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: 💾 Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            .next/cache
+          key: deps-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - name: ✨ Generate Prisma client
-        run: pnpm run db:generate
+      - name: 📦 Install if cache miss
+        run: |
+          if [ ! -d "node_modules" ]; then
+            pnpm ci:prepare
+          fi
 
-      - name: 🧹 Run lint
-        run: pnpm run lint
+      - name: 🔍 Quality checks
+        run: pnpm ci:quality
 
-      - name: 💅 Check formatting
-        run: pnpm run format:check
+      - name: 📊 Upload lint results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lint-results
+          path: reports/
+          retention-days: 7
 
-      - name: 🔍 Type check
-        run: pnpm run type-check
-
-  unit_tests:
-    name: 🧪 Unit Tests
+  # Unit Tests - Fast, parallel
+  unit-tests:
+    name: 🧪 Unit Tests  
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: code_quality
-
+    needs: [changes, setup]
+    if: needs.changes.outputs.code == 'true' || needs.changes.outputs.tests == 'true'
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        shard: [1, 2] # 🔥 Parallel test execution
     steps:
-      - name: 📥 Checkout code
+      - name: 📥 Checkout
         uses: actions/checkout@v4
 
       - name: 📦 Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: ${{ env.PNPM_VERSION }}
 
       - name: 🧰 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
-      - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: 💾 Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            .next/cache
+          key: deps-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - name: ✨ Generate Prisma client
-        run: pnpm run db:generate
+      - name: 📦 Install if cache miss
+        run: |
+          if [ ! -d "node_modules" ]; then
+            pnpm ci:prepare
+          fi
 
       - name: 🧪 Run unit tests
-        run: pnpm run test:unit
+        run: pnpm ci:test:unit --shard=${{ matrix.shard }}/${{ strategy.job-total }}
 
-  database_tests:
-    name: 🗄️ Database Tests
+      - name: 📊 Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          flags: unit-tests
+          name: unit-tests-shard-${{ matrix.shard }}
+
+  # Integration Tests - With database
+  integration-tests:
+    name: 🔗 Integration Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: code_quality
+    needs: [changes, setup]
+    if: needs.changes.outputs.code == 'true' || needs.changes.outputs.tests == 'true'
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=5
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🧰 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: 💾 Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            .next/cache
+          key: deps-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: 📦 Install if cache miss
+        run: |
+          if [ ! -d "node_modules" ]; then
+            pnpm ci:prepare
+          fi
+
+      - name: 🗄️ Setup database
+        run: |
+          pnpm db:migrate:deploy
+          pnpm db:seed:test
+
+      - name: 🔗 Run integration tests
+        run: pnpm ci:test:integration
+
+      - name: 📊 Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          flags: integration-tests
+
+  # E2E Tests - Full application
+  e2e-tests:
+    name: 🎭 E2E Tests
+    runs-on: ubuntu-latest
+    needs: [changes, setup]
+    if: needs.changes.outputs.code == 'true' || needs.changes.outputs.tests == 'true'
+    timeout-minutes: 30
 
     services:
       postgres:
@@ -93,80 +268,151 @@ jobs:
           - 5432:5432
         options: >-
           --health-cmd="pg_isready -U postgres"
-          --health-interval=10s
-          --health-timeout=5s
+          --health-interval=5s
+          --health-timeout=3s
           --health-retries=5
 
-    env:
-      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/test_db?schema=public"
-
     steps:
-      - name: 📥 Checkout code
+      - name: 📥 Checkout
         uses: actions/checkout@v4
 
       - name: 📦 Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: ${{ env.PNPM_VERSION }}
 
       - name: 🧰 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
-      - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: 💾 Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            .next/cache
+          key: deps-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - name: ✨ Generate Prisma client
-        run: pnpm run db:generate
-
-      - name: 🚀 Run migrations
-        run: pnpm run db:migrate:dev
-
-      - name: 🌱 Seed database
-        run: pnpm run db:seed
-
-      - name: 🔍 Test database connection
+      - name: 📦 Install if cache miss
         run: |
-          pnpm exec tsx -e "
-          import { PrismaClient } from '@prisma/client';
-          const prisma = new PrismaClient();
-          prisma.\$connect().then(() => {
-            console.log('✅ Database connected successfully');
-            process.exit(0);
-          }).catch(() => {
-            console.error('❌ Database connection failed');
-            process.exit(1);
-          });
-          "
+          if [ ! -d "node_modules" ]; then
+            pnpm ci:prepare
+          fi
 
-  build:
-    name: 🏗️ Build Test
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [unit_tests, database_tests]
+      - name: 🗄️ Setup database
+        run: |
+          pnpm db:migrate:deploy
+          pnpm db:seed:test
 
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - name: 🧰 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-
-      - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: ✨ Generate Prisma client
-        run: pnpm run db:generate
+      - name: 🎭 Install Playwright
+        run: pnpm exec playwright install --with-deps
 
       - name: 🏗️ Build application
-        run: pnpm run build
+        run: pnpm ci:build
+
+      - name: 🎭 Run E2E tests
+        run: pnpm ci:test:e2e
+
+      - name: 📊 Upload E2E report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  # Build verification
+  build:
+    name: 🏗️ Build
+    runs-on: ubuntu-latest
+    needs: [changes, setup, quality]
+    if: needs.changes.outputs.code == 'true' || needs.changes.outputs.deps == 'true'
+    timeout-minutes: 15
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🧰 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: 💾 Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            .next/cache
+          key: deps-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: 📦 Install if cache miss
+        run: |
+          if [ ! -d "node_modules" ]; then
+            pnpm ci:prepare
+          fi
+
+      - name: 🏗️ Build application
+        run: pnpm ci:build
+
+      - name: 📦 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            .next/
+            !.next/cache
+          retention-days: 7
+
+  # Security scanning
+  security:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    needs: setup
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔒 Run dependency audit
+        run: pnpm audit --audit-level moderate
+
+      - name: 🔍 CodeQL Analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: typescript
+
+      - name: 🔍 Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  # Summary job
+  ci-summary:
+    name: ✅ CI Summary  
+    runs-on: ubuntu-latest
+    needs: [quality, unit-tests, integration-tests, e2e-tests, build]
+    if: always()
+    steps:
+      - name: 📊 Check results
+        run: |
+          echo "Quality: ${{ needs.quality.result }}"
+          echo "Unit Tests: ${{ needs.unit-tests.result }}"  
+          echo "Integration Tests: ${{ needs.integration-tests.result }}"
+          echo "E2E Tests: ${{ needs.e2e-tests.result }}"
+          echo "Build: ${{ needs.build.result }}"
+          
+      - name: ✅ Success
+        if: needs.quality.result == 'success' && needs.unit-tests.result == 'success' && needs.integration-tests.result == 'success' && needs.e2e-tests.result == 'success' && needs.build.result == 'success'
+        run: echo "🎉 All checks passed!"
+        
+      - name: ❌ Failure  
+        if: needs.quality.result == 'failure' || needs.unit-tests.result == 'failure' || needs.integration-tests.result == 'failure' || needs.e2e-tests.result == 'failure' || needs.build.result == 'failure'
+        run: |
+          echo "💥 CI pipeline failed"
+          exit 1
