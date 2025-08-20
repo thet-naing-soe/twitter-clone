@@ -10,6 +10,19 @@
     "typescript": "javascript",
     "typescriptreact": "javascriptreact"
   },
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+    "files.associations": {
+      "*.css":"tailwindcss"
+    },
+    "emmet.includeLanguages": {
+      "typescript": "html",
+      "typescriptreact": "html"
+    },
   "files.watcherExclude": {
     "**/.git/**": true,
     "**/node_modules/**": true,
@@ -17,7 +30,11 @@
     "**/build/**": true,
     "**/.env/**": true,
     "**/.env.local/**": true,
-    "**/tmp/**": true
+    "**/.env.test/**": true,
+    "**/tmp/**": true,
+    "**/coverage/**": true,
+    "**/playwright-report/**": true,
+    "**/report/**":true,
   },
   "search.exclude": {
     "**/.git/**": true,
@@ -26,6 +43,10 @@
     "**/build/**": true,
     "**/.env/**": true,
     "**/.env.local/**": true,
-    "**/tmp/**": true
+    "**/.env.test/**": true,
+    "**/tmp/**": true,
+     "**/coverage/**": true,
+    "**/playwright-report/**": true,
+    "**/report/**":true,
   },
 }

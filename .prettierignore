@@ -1,62 +1,220 @@
-# Prettier ignore patterns
+# Files and directories that should NOT be formatted by Prettier
 
-# Dependencies
-node_modules
-.pnpm-store
+# -----------------------------------------------------------------------------
+# 1. DEPENDENCIES & NODE_MODULES
+# -----------------------------------------------------------------------------
+node_modules/
+.pnpm-store/
+.yarn/
 
-# Build output
-.next
-out
-build
-dist
-coverage
-.swc
+# -----------------------------------------------------------------------------
+# 2. BUILD OUTPUT & GENERATED FILES
+# -----------------------------------------------------------------------------
+# Next.js build output
+.next/
+out/
+build/
+dist/
 
-# TypeScript / Next.js Generated Files
-next-env.d.ts
+# TypeScript compilation output
 *.tsbuildinfo
+lib/
+esm/
 
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-*.log
+# Generated files
+/generated/
+/app/generated/
+public/generated/
 
-# Lock files
+# -----------------------------------------------------------------------------
+# 3. CONFIGURATION & LOCK FILES
+# -----------------------------------------------------------------------------
+# Package manager lock files (shouldn't be formatted)
 pnpm-lock.yaml
 yarn.lock
 package-lock.json
 
-# Environment
-.env
-.env.*
+# Configuration files with specific formatting requirements
+.env*
 !.env.example
 
-# Vercel/Deploy
-.vercel
+# -----------------------------------------------------------------------------
+# 4. TESTING & COVERAGE
+# -----------------------------------------------------------------------------
+# Coverage reports
+coverage/
+.coverage/
+test-results/
+playwright-report/
+/blob-report/
 
-# Miscellaneous
-CHANGELOG.md
-LICENSE
-*.pem
+# Test cache
+.jest-cache/
+.vitest-cache/
+
+# -----------------------------------------------------------------------------
+# 5. LOGS & TEMPORARY FILES
+# -----------------------------------------------------------------------------
+# Logs
+*.log
+logs/
+
+# Temporary files
 *.tmp
+*.temp
 *.bak
 
-# Configuration and system files
-.DS_Store
-.vscode
-.idea
-.cache
-.turbo
+# Cache directories
+.cache/
+.eslintcache
+.stylelintcache
+.turbo/
 
-# Ignore configuration & tooling files
-.github/**
-.vscode/**
-eslint*.{js,cjs,json}
-commitlint.config.{js,cjs,mjs}
-lint-staged.config.{js,cjs,mjs}
-vitest.config.ts
-vitest.setup.{ts,tsx}
-tailwind.config.ts
+# -----------------------------------------------------------------------------
+# 6. STATIC ASSETS & MEDIA
+# -----------------------------------------------------------------------------
+# Images, videos, fonts (don't format binary files)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.svg
+*.webp
+*.avif
+*.mp4
+*.webm
+*.woff
+*.woff2
+*.ttf
+*.eot
 
+# Audio files
+*.mp3
+*.wav
+*.ogg
+
+# -----------------------------------------------------------------------------
+# 7. DATA & DATABASE FILES
+# -----------------------------------------------------------------------------
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Data files
+*.csv
+*.json.gz
+*.xml
+*.sql
+
+# Prisma generated files
+prisma/migrations/*/migration.sql
+
+# -----------------------------------------------------------------------------
+# 8. DOCUMENTATION WITH SPECIFIC FORMATTING
+# -----------------------------------------------------------------------------
+# Changelog (often has specific formatting)
+CHANGELOG.md
+CHANGELOG.txt
+
+# License files
+LICENSE
+LICENSE.txt
+LICENSE.md
+
+# Auto-generated documentation
+docs/api/
+api-docs/
+
+# -----------------------------------------------------------------------------
+# 9. VENDOR & THIRD-PARTY CODE
+# -----------------------------------------------------------------------------
+# Third-party libraries
+vendor/
+public/lib/
+public/vendor/
+
+# CDN assets
+public/cdn/
+
+# -----------------------------------------------------------------------------
+# 10. DEPLOYMENT & CI/CD
+# -----------------------------------------------------------------------------
+# Docker files with specific formatting
+Dockerfile*
+docker-compose*.yml
+
+# Kubernetes manifests
+k8s/
+*.yaml
+*.yml
+
+# GitHub Actions (often need specific formatting)
+.github/workflows/
+
+# -----------------------------------------------------------------------------
+# 11. IDE & EDITOR FILES
+# -----------------------------------------------------------------------------
+# VS Code settings (user-specific)
+.vscode/settings.json
+.vscode/launch.json
+
+# -----------------------------------------------------------------------------
+# 12. MINIFIED & COMPRESSED FILES
+# -----------------------------------------------------------------------------
+# Minified JavaScript/CSS (don't format)
+*.min.js
+*.min.css
+*.min.mjs
+
+# Compressed files
+*.gz
+*.zip
+*.tar
+*.7z
+
+# -----------------------------------------------------------------------------
+# 13. SPECIAL FORMAT FILES
+# -----------------------------------------------------------------------------
+# Bundle analyzer reports
+webpack-bundle-analyzer-report.html
+bundle-report.html
+
+# Certificates
+*.pem
+*.key
+*.crt
+
+# Binary files
+*.exe
+*.dll
+*.so
+*.dylib
+
+# -----------------------------------------------------------------------------
+# 14. PROJECT SPECIFIC EXCLUSIONS
+# -----------------------------------------------------------------------------
+# Reports with specific formatting
+/reports/
+/test-reports/
+
+# Mock data with specific structure
+/mocks/
+/__mocks__/
+
+# Fixtures
+/fixtures/
+/__fixtures__/
+
+# Storybook build
+storybook-static/
+
+# -----------------------------------------------------------------------------
+# 15. ALLOW SPECIFIC FILES (Override patterns above)
+# -----------------------------------------------------------------------------
+# Format these even if they match above patterns
+!src/**/*.json
+!app/**/*.json
+!components/**/*.json
+!lib/**/*.json

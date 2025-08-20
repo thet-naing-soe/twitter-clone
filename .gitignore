@@ -1,74 +1,274 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Comprehensive ignore patterns for Node.js, Next.js, TypeScript, and tooling
 
 # -----------------------------------------------------------------------------
-# 1. Dependencies
+# 1. DEPENDENCIES & PACKAGE MANAGERS
+# -----------------------------------------------------------------------------
 node_modules/
 .pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Keep lock files for reproducible builds (IMPORTANT: DO NOT IGNORE)
+# pnpm-lock.yaml    # ❌ Don't ignore - needed for reproducible builds
+# yarn.lock         # ❌ Don't ignore - needed for reproducible builds
+# package-lock.json # ❌ Don't ignore - needed for reproducible builds
 
 # -----------------------------------------------------------------------------
-# 2. Next.js/Build
+# 2. BUILD OUTPUT & COMPILATION
+# -----------------------------------------------------------------------------
+# Next.js
 .next/
 out/
+.next/analyze/
+.next/cache/
+.next/server/chunks/
+.next/static/chunks/
+.next/trace/
+
+# General build directories
 build/
 dist/
+lib/
+esm/
+cjs/
+
+# SWC (Speedy Web Compiler)
 .swc/
-.next/analyze/
+
+# TypeScript compilation
+*.tsbuildinfo
+.tscache/
+
+# Webpack
+.webpack/
 
 # -----------------------------------------------------------------------------
-# 3. Environment Variables
-.env*
+# 3. ENVIRONMENT & CONFIGURATION
+# -----------------------------------------------------------------------------
+# Environment files
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Keep example files
 !.env.example
+!.env.sample
+!.env.template
 
 # -----------------------------------------------------------------------------
-# 4. IDEs and Editors
-.vscode/*
-!.vscode/settings.json
-!.vscode/extensions.json
-!.vscode/launch.json
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# 4. DATABASE & PRISMA
+# -----------------------------------------------------------------------------
+# Prisma
+/prisma/migrations/migration_lock.toml
+/app/generated/prisma/
+/generated/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
 
 # -----------------------------------------------------------------------------
-# 5. Operating System Files
-.DS_Store
-Thumbs.db
+# 5. TESTING & COVERAGE
+# -----------------------------------------------------------------------------
+# Test coverage
+coverage/
+.coverage/
+.jest-cache/
+.vitest-cache/
+test-results/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+playwright-report/
+
+# Jest
+jest-coverage/
 
 # -----------------------------------------------------------------------------
-# 6. Logs
+# 6. LOGS & DEBUG
+# -----------------------------------------------------------------------------
+# NPM/Yarn/PNPM logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
+
+# Application logs
 *.log
+logs/
+*.log.*
+
+# Debug files
+.vscode/chrome/
+.debug/
 
 # -----------------------------------------------------------------------------
-# 7. Testing
-coverage/
-.jest-cache/
-
+# 7. CACHE & TEMPORARY FILES
 # -----------------------------------------------------------------------------
-# 8. Miscellaneous
-*.pem
-*.tmp
-*.bak
-
-# -----------------------------------------------------------------------------
-# 9. Lock files (exclude if you're not committing them)
-pnpm-lock.yaml
-yarn.lock
-package-lock.json
-
-# -----------------------------------------------------------------------------
-# 10. Other tools
-.eslintcache
-.envrc
+# Tool caches
 .cache/
+.eslintcache
+.stylelintcache
+.parcel-cache/
 .turbo/
-.vercel/
+.nx/cache/
 
-# 11. TypeScript
-*.tsbuildinfo
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+*.bak
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# -----------------------------------------------------------------------------
+# 8. IDE & EDITOR CONFIGURATION
+# -----------------------------------------------------------------------------
+# Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Other editors
+.history/
+.vimrc.local
+.nvimrc.local
+
+# -----------------------------------------------------------------------------
+# 9. DEPLOYMENT & HOSTING
+# -----------------------------------------------------------------------------
+# Vercel
+.vercel/
+.vercel.json
+
+# Netlify
+.netlify/
+
+# AWS Amplify
+amplify/
+.amplifyrc
+
+# Docker
+.dockerignore
+Dockerfile.prod
+
+# -----------------------------------------------------------------------------
+# 10. SECURITY & CERTIFICATES
+# -----------------------------------------------------------------------------
+# SSL certificates
+*.pem
+*.key
+*.crt
+*.cert
+*.p12
+*.pfx
+
+# SSH keys
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+*.pub
+
+# -----------------------------------------------------------------------------
+# 11. MONITORING & ANALYTICS
+# -----------------------------------------------------------------------------
+# Sentry
+.sentryclirc
+sentry.properties
+
+# Bundle analysis
+bundle-analyzer-report.html
+webpack-bundle-analyzer/
+
+# Lighthouse
+lighthouse-report.html
+
+# -----------------------------------------------------------------------------
+# 12. DOCUMENTATION GENERATED
+# -----------------------------------------------------------------------------
+# Documentation sites
+docs/_site/
+.docusaurus/
+storybook-static/
+
+# API documentation
+api-docs/
+
+# -----------------------------------------------------------------------------
+# 13. MISCELLANEOUS
+# -----------------------------------------------------------------------------
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+lib-cov/
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Zero-installs (Yarn 2+)
+.pnp/
+.pnp.js
+.pnp.cjs
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# -----------------------------------------------------------------------------
+# 14. PROJECT SPECIFIC
+# -----------------------------------------------------------------------------
+# Reports directory
+/reports/
+/test-reports/
+
+# Generated content
+/public/generated/
+/public/uploads/
+
+# Backup files
+*.backup
+*.bak.*

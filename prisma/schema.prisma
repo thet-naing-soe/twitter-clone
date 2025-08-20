@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  // Primary key - internal sequence for performance
+  id Int @id @default(autoincrement())
+
+  // Public UUID for secure URLs  
+  publicId String @unique @default(cuid())
+
+  // Authentication fields
+  email    String @unique
+  username String @unique
+
+  // Profile information
+  displayName String?
+  bio         String?
+  avatar      String?
+  verified    Boolean @default(false)
+
+  // Audit fields
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Soft delete
+  deletedAt DateTime?
+
+  // Relationships
+  tweets Tweet[]
+  likes  Like[]
+
+  // Following relationships
+  following Follow[] @relation("UserFollowing")
+
+  // Followers relationships
+  followers Follow[] @relation("UserFollowers")
+
+  @@map("users")
+}
+
+model Tweet {
+  // Primary key
+  id       Int    @id @default(autoincrement())
+  publicId String @unique @default(cuid())
+
+  // Content
+  content String @db.VarChar(280)
+
+  // Media attachments (JSON array of URLs)
+  media Json?
+
+  // Author relationship
+  authorId Int
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Reply functionality (self-referencing)
+  parentId Int?
+  parent   Tweet?  @relation("TweetReplies", fields: [parentId], references: [id])
+  replies  Tweet[] @relation("TweetReplies")
+
+  // Denormalized counters for performance
+  likesCount    Int @default(0)
+  repliesCount  Int @default(0)
+  retweetsCount Int @default(0)
+
+  // Audit fields
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  // Relationships
+  likes Like[]
+
+  // Indexes for performance
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([parentId])
+  @@map("tweets")
+}
+
+model Follow {
+  id Int @id @default(autoincrement())
+
+  // Who is following
+  followerId Int
+  follower   User @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+
+  // Who is being followed  
+  followingId Int
+  following   User @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  // Audit
+  createdAt DateTime @default(now())
+
+  // Prevent duplicate follows and self-follows
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@map("follows")
+}
+
+model Like {
+  id Int @id @default(autoincrement())
+
+  // User who liked
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Tweet that was liked
+  tweetId Int
+  tweet   Tweet @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+
+  // Audit
+  createdAt DateTime @default(now())
+
+  // Prevent duplicate likes
+  @@unique([userId, tweetId])
+  @@index([userId])
+  @@index([tweetId])
+  @@map("likes")
+}
