@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createMockTweet } from '@/tests/shared/factories/tweet.factory';
-import { createMockUsers } from '@/tests/shared/factories/user.factory';
-import { TestUtils } from '@/tests/shared/setup/db.config';
+import { createMockTweet } from '@/tests/factories/tweet.factory';
+import { createMockUsers } from '@/tests/factories/user.factory';
+import { TestUtils } from '@/tests/setup/backend-unit.setup';
 
 describe('Tweets Seeding Module', () => {
   const { mocks } = TestUtils;

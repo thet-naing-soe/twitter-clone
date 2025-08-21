@@ -5,7 +5,7 @@ import {
   setupTestDatabase,
   teardownTestDatabase,
   truncateDatabase,
-} from '../../shared/setup/integration-db.config';
+} from '@/tests/integration/database/integration-db.config';
 
 describe('🌱 Main Seeding Function Integration Tests', () => {
   let testDb: PrismaClient;

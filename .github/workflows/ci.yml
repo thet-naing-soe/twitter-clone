@@ -11,7 +11,7 @@ on:
     branches: [main, develop]
     paths-ignore:
       - '**.md'
-      - '.gitignore' 
+      - '.gitignore'
       - 'LICENSE'
   workflow_dispatch:
 
@@ -70,7 +70,7 @@ jobs:
         with:
           version: ${{ env.PNPM_VERSION }}
 
-      - name: 🧰 Setup Node.js  
+      - name: 🧰 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -137,14 +137,15 @@ jobs:
 
   # Unit Tests - Fast, parallel
   unit-tests:
-    name: 🧪 Unit Tests  
+    name: 🧪 Unit Tests (${{ matrix.suite }})
     runs-on: ubuntu-latest
     needs: [changes, setup]
     if: needs.changes.outputs.code == 'true' || needs.changes.outputs.tests == 'true'
     timeout-minutes: 15
     strategy:
+      fail-fast: false 
       matrix:
-        shard: [1, 2] # 🔥 Parallel test execution
+        suite: [frontend, backend]
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
@@ -174,22 +175,26 @@ jobs:
             pnpm ci:prepare
           fi
 
-      - name: 🧪 Run unit tests
-        run: pnpm ci:test:unit --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+      - name: 🧪 Run unit tests for ${{ matrix.suite }}
+        run: pnpm test:${{ matrix.suite }}:unit:coverage
 
       - name: 📊 Upload coverage
         uses: codecov/codecov-action@v4
         with:
           flags: unit-tests
-          name: unit-tests-shard-${{ matrix.shard }}
+          name: unit-tests-${{ matrix.suite }}
 
   # Integration Tests - With database
   integration-tests:
-    name: 🔗 Integration Tests
+    name: 🔗 Integration Tests (${{ matrix.suite }})
     runs-on: ubuntu-latest
     needs: [changes, setup]
     if: needs.changes.outputs.code == 'true' || needs.changes.outputs.tests == 'true'
     timeout-minutes: 20
+    strategy:
+      fail-fast: false 
+      matrix:
+        suite: [frontend, backend]
 
     env:
       TEST_DB_USER: postgres
@@ -249,13 +254,14 @@ jobs:
           pnpm db:migrate:deploy
           pnpm db:seed:test
 
-      - name: 🔗 Run integration tests
-        run: pnpm ci:test:integration
+      - name: 🔗 Run integration tests for ${{ matrix.suite }}
+        run: pnpm test:${{ matrix.suite }}:integration:coverage
 
       - name: 📊 Upload coverage
         uses: codecov/codecov-action@v4
         with:
           flags: integration-tests
+          name: integration-tests-${{ matrix.suite }}
 
   # E2E Tests - Full application
   e2e-tests:
@@ -424,7 +430,7 @@ jobs:
 
   # Summary job
   ci-summary:
-    name: ✅ CI Summary  
+    name: ✅ CI Summary
     runs-on: ubuntu-latest
     needs: [quality, unit-tests, integration-tests, e2e-tests, build]
     if: always()
@@ -432,16 +438,16 @@ jobs:
       - name: 📊 Check results
         run: |
           echo "Quality: ${{ needs.quality.result }}"
-          echo "Unit Tests: ${{ needs.unit-tests.result }}"  
+          echo "Unit Tests: ${{ needs.unit-tests.result }}"
           echo "Integration Tests: ${{ needs.integration-tests.result }}"
           echo "E2E Tests: ${{ needs.e2e-tests.result }}"
           echo "Build: ${{ needs.build.result }}"
-          
+
       - name: ✅ Success
         if: needs.quality.result == 'success' && needs.unit-tests.result == 'success' && needs.integration-tests.result == 'success' && needs.e2e-tests.result == 'success' && needs.build.result == 'success'
         run: echo "🎉 All checks passed!"
-        
-      - name: ❌ Failure  
+
+      - name: ❌ Failure
         if: needs.quality.result == 'failure' || needs.unit-tests.result == 'failure' || needs.integration-tests.result == 'failure' || needs.e2e-tests.result == 'failure' || needs.build.result == 'failure'
         run: |
           echo "💥 CI pipeline failed"

@@ -2,7 +2,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { afterAll, beforeAll, vi } from 'vitest';
 
-import { testEnv } from './test-env.config';
+import { testEnv } from '../integration/database/test-env.config';
 
 const execAsync = promisify(exec);
 

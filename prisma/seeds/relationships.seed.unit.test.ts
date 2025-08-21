@@ -1,9 +1,9 @@
 import type { Follow, Like } from '@prisma/client';
 import { describe, expect, it } from 'vitest';
 
-import { createMockTweets } from '@/tests/shared/factories/tweet.factory';
-import { createMockUsers } from '@/tests/shared/factories/user.factory';
-import { TestUtils } from '@/tests/shared/setup/db.config';
+import { createMockTweets } from '@/tests/factories/tweet.factory';
+import { createMockUsers } from '@/tests/factories/user.factory';
+import { TestUtils } from '@/tests/setup/backend-unit.setup';
 
 describe('Relationships Seeding Module', () => {
   const { mocks } = TestUtils;

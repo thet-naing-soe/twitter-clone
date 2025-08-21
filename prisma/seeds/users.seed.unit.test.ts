@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { createMockUser } from '@/tests/shared/factories/user.factory';
-import { TestUtils } from '@/tests/shared/setup/db.config';
+import { createMockUser } from '@/tests/factories/user.factory';
+import { TestUtils } from '@/tests/setup/backend-unit.setup';
 
 describe('Users Seeding Module', () => {
   const { mocks } = TestUtils;
