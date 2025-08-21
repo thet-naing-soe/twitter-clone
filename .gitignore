@@ -31,7 +31,6 @@ out/
 # General build directories
 build/
 dist/
-lib/
 esm/
 cjs/
 
@@ -65,7 +64,6 @@ cjs/
 # 4. DATABASE & PRISMA
 # -----------------------------------------------------------------------------
 # Prisma
-/prisma/migrations/migration_lock.toml
 /app/generated/prisma/
 /generated/
 
