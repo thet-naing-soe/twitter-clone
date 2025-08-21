@@ -12,26 +12,23 @@ export default defineConfig({
   },
   test: {
     reporters: process.env.GITHUB_ACTIONS ? ['verbose', 'github-actions'] : ['verbose'],
-
     root: __dirname,
     globals: true,
     passWithNoTests: true,
-    // Global timeout
     testTimeout: 60000,
     hookTimeout: 90000,
-
-    // Worker settings
     maxWorkers: process.env.CI ? 2 : undefined,
     minWorkers: process.env.CI ? 1 : undefined,
-
     poolOptions: {
       threads: {
         maxThreads: process.env.CI ? 2 : undefined,
         minThreads: process.env.CI ? 1 : undefined,
       },
     },
-    // Worker timeout
     teardownTimeout: 30000,
+    isolate: true,
+    clearMocks: true,
+    restoreMocks: true,
 
     projects: [
       {
@@ -41,36 +38,21 @@ export default defineConfig({
           },
         },
         test: {
-          name: 'unit',
+          name: 'frontend:unit',
           environment: 'jsdom',
-          setupFiles: ['./tests/shared/setup/unit.setup.ts'],
-
+          setupFiles: ['./tests/setup/frontend.setup.ts'],
           include: [
-            'app/**/*.{test,spec}.{ts,tsx}',
-            'components/**/*.{test,spec}.{ts,tsx}',
-            'lib/**/*.{test,spec}.{ts,tsx}',
-            'utils/**/*.{test,spec}.{ts,tsx}',
-            'prisma/**/*.{test,spec}.{ts,tsx}',
+            'app/**/*.unit.{test,spec}.{ts,tsx}',
+            'components/**/*.unit.{test,spec}.{ts,tsx}',
           ],
-          exclude: [
-            '**/*.integration.{test,spec}.{ts,tsx}',
-            '**/node_modules/**',
-            '**/*.config.{ts,js}',
-          ],
+          exclude: ['**/node_modules/**', '**/*.config.{ts,js}'],
           testTimeout: 15_000,
           pool: 'threads',
           poolOptions: {
-            threads: {
-              singleThread: true,
-              isolate: true,
-            },
+            threads: { singleThread: true, isolate: true },
           },
-
           environmentOptions: {
-            jsdom: {
-              resources: 'usable',
-              runScripts: 'dangerously',
-            },
+            jsdom: { resources: 'usable', runScripts: 'dangerously' },
           },
         },
       },
@@ -81,20 +63,68 @@ export default defineConfig({
           },
         },
         test: {
-          name: 'integration',
+          name: 'frontend:integration',
+          environment: 'jsdom',
+          setupFiles: [
+            './tests/setup/frontend.setup.ts', // UI mocks
+            './tests/setup/msw.setup.ts', // API mocks
+          ],
+          include: [
+            'app/**/*.integration.{test,spec}.{ts,tsx}',
+            'components/**/*.integration.{test,spec}.{ts,tsx}',
+          ],
+          exclude: ['**/node_modules/**', '**/*.config.{ts,js}'],
+          testTimeout: 25_000,
+          pool: 'threads',
+          poolOptions: {
+            threads: { singleThread: true, isolate: true },
+          },
+          environmentOptions: {
+            jsdom: { resources: 'usable', runScripts: 'dangerously' },
+          },
+        },
+      },
+      {
+        resolve: {
+          alias: {
+            '@': path.resolve(__dirname, './'),
+          },
+        },
+        test: {
+          name: 'backend:unit',
           environment: 'node',
-          setupFiles: ['./tests/shared/setup/integration.setup.ts'],
+          setupFiles: ['./tests/setup/backend-unit.setup.ts'],
+          include: [
+            'lib/**/*.unit.{test,spec}.ts',
+            'utils/**/*.unit.{test,spec}.ts',
+            'prisma/**/*.unit.{test,spec}.ts',
+          ],
+          exclude: ['**/node_modules/**', '**/*.config.{ts,js}'],
+          testTimeout: 15_000,
+          pool: 'threads',
+          poolOptions: {
+            threads: { singleThread: true, isolate: true },
+          },
+        },
+      },
+      {
+        resolve: {
+          alias: {
+            '@': path.resolve(__dirname, './'),
+          },
+        },
+        test: {
+          name: 'backend:integration',
+          environment: 'node',
+          setupFiles: ['./tests/setup/backend-integration.setup.ts'],
           include: ['tests/integration/**/*.{test,spec}.{ts,tsx}'],
-          exclude: ['tests/unit/**', '**/node_modules/**', '**/*.unit.{test,spec}.{ts,tsx}'],
+          exclude: ['**/node_modules/**', '**/*.config.{ts,js}'],
 
-          testTimeout: 120_000, // 2 minutes for individual tests
-          hookTimeout: 180_000, // 3 minutes for hooks
+          testTimeout: 120_000,
+          hookTimeout: 180_000,
           pool: 'forks',
           poolOptions: {
-            forks: {
-              singleFork: true,
-              isolate: true,
-            },
+            forks: { singleFork: true, isolate: true },
           },
           retry: 1,
         },
@@ -103,7 +133,6 @@ export default defineConfig({
 
     coverage: {
       provider: 'v8',
-
       reporter: process.env.CI ? ['text', 'json-summary', 'lcov'] : ['text', 'html', 'json'],
 
       // thresholds: {
@@ -136,7 +165,6 @@ export default defineConfig({
         'hooks/**/*.{ts,tsx}',
         'prisma/**/*.{ts,tsx}',
       ],
-
       exclude: [
         'node_modules/**',
         'tests/**',
@@ -154,25 +182,13 @@ export default defineConfig({
         'prisma/migrations/**',
         'lib/prisma.ts',
       ],
-
       reportsDirectory: './coverage',
-
       all: true,
       skipFull: false,
-
       clean: true,
       cleanOnRerun: true,
     },
-
-    // Watch mode configuration
     watch: process.env.WATCH === 'true',
     exclude: ['**/node_modules/**', '**/dist/**', '**/.next/**', '**/coverage/**', '**/.git/**'],
-
-    // Performance optimization
-    isolate: true,
-
-    // Development experience improvements
-    clearMocks: true,
-    restoreMocks: true,
   },
 });

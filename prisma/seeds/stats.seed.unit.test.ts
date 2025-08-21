@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { TestUtils } from '@/tests/shared/setup/db.config';
+import { TestUtils } from '@/tests/setup/backend-unit.setup';
 
 describe('Statistics Seeding Module', () => {
   const { mocks } = TestUtils;
