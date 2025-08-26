@@ -1,30 +1,32 @@
 import { http, HttpResponse } from 'msw';
 
-interface LoginBody {
-  username?: string;
-  password?: string;
-}
-
-export const handlers = [
-  http.get('/api/user', () => {
+export const authHandlers = [
+  // Google OAuth mock
+  http.post('https://oauth2.googleapis.com/token', () => {
     return HttpResponse.json({
-      id: 'c7b3d8e0-5e0b-4b0f-8b3a-3b9f4b3d3b3d',
-      firstName: 'John',
-      lastName: 'Maverick',
+      access_token: 'mock_access_token',
+      token_type: 'Bearer',
+      expires_in: 3600,
+      refresh_token: 'mock_refresh_token',
     });
   }),
 
-  http.post('/api/login', async ({ request }) => {
-    const info = (await request.json()) as LoginBody;
+  // Google User Info mock
+  http.get('https://www.googleapis.com/oauth2/v2/userinfo', () => {
+    return HttpResponse.json({
+      id: 'google_user_123',
+      email: 'user@gmail.com',
+      name: 'Google User',
+      picture: 'https://example.com/avatar.jpg',
+    });
+  }),
 
-    if (!info?.username || !info?.password) {
-      return new HttpResponse('Username and password are required', { status: 400 });
-    }
-
-    if (info.username === 'testuser' && info.password === 'password') {
-      return HttpResponse.json({ success: true, token: 'fake-jwt-token' });
-    } else {
-      return new HttpResponse('Invalid credentials', { status: 401 });
-    }
+  // Email sending mock (သုံးရင်)
+  http.post('*/api/auth/signin/email', () => {
+    return HttpResponse.json({
+      message: 'Check your email for signin link',
+    });
   }),
 ];
+
+export const handlers = [...authHandlers];

@@ -5,12 +5,14 @@ const BASE_USER_TEMPLATE: Readonly<User> = Object.freeze({
   id: 1,
   publicId: 'user-1',
   email: 'test@example.com',
+  emailVerified: null,
   username: 'testuser',
   displayName: 'Test User',
   bio: 'Test user bio',
   avatar: null,
+  image: null,
   verified: false,
-  createdAt: new Date('2024-01-01T00:00:00.000Z'), // Fixed date for deterministic tests
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
   updatedAt: new Date('2024-01-01T00:00:00.000Z'),
   deletedAt: null,
 } as const);
@@ -74,6 +76,12 @@ export const UserVariants = {
 
   /** User with avatar */
   withAvatar: () => createMockUser({ avatar: 'https://example.com/avatar.jpg' }),
+
+  /** User with NextAuth image */
+  withImage: () => createMockUser({ image: 'https://example.com/profile.jpg' }),
+
+  /** Email verified user */
+  emailVerified: () => createMockUser({ emailVerified: new Date() }),
 
   /** Deleted user */
   deleted: () => createMockUser({ deletedAt: new Date() }),
