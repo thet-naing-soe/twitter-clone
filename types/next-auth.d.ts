@@ -8,7 +8,10 @@ declare module 'next-auth' {
   }
 
   interface User {
-    id: string;
+    id: string; // Database user ID
+    email?: string; // Email field (optional)
+    name?: string; // Name field (optional)
+    image?: string; // Profile image URL (optional)
   }
 }
 
